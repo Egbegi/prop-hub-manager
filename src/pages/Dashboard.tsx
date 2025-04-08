@@ -1,9 +1,8 @@
-
 import React from "react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Layout } from "@/components/layout/Layout";
 import { Progress } from "@/components/ui/progress";
-import { User, Home, Settings, ArrowUp, ArrowDown } from "lucide-react";
+import { User, Home, Settings, ArrowUp, ArrowDown, FileText } from "lucide-react";
 
 const Dashboard = () => {
   return (
