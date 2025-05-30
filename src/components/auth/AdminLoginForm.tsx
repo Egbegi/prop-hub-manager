@@ -5,10 +5,10 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Loader2, Lock, Mail, Home } from 'lucide-react';
+import { Loader2, Lock, Mail, Shield } from 'lucide-react';
 import { Link, Navigate } from 'react-router-dom';
 
-export const LoginForm = () => {
+export const AdminLoginForm = () => {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const { signIn, loading, user, isAdmin } = useAuth();
@@ -27,23 +27,23 @@ export const LoginForm = () => {
       <Card className="w-full max-w-md">
         <CardHeader className="space-y-1">
           <div className="flex items-center justify-center mb-2">
-            <Home className="h-8 w-8 text-primary" />
+            <Shield className="h-8 w-8 text-primary" />
           </div>
-          <CardTitle className="text-2xl text-center">Tenant Login</CardTitle>
+          <CardTitle className="text-2xl text-center">Admin Login</CardTitle>
           <p className="text-sm text-muted-foreground text-center">
-            Access your tenant portal
+            Access the administration panel
           </p>
         </CardHeader>
         <CardContent>
           <form onSubmit={handleSubmit} className="space-y-4">
             <div className="space-y-2">
-              <Label htmlFor="email">Email</Label>
+              <Label htmlFor="email">Admin Email</Label>
               <div className="relative">
                 <Mail className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
                 <Input
                   id="email"
                   type="email"
-                  placeholder="your@email.com"
+                  placeholder="admin@company.com"
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
                   className="pl-10"
@@ -73,22 +73,14 @@ export const LoginForm = () => {
                   Signing in...
                 </>
               ) : (
-                'Sign In to Portal'
+                'Access Admin Panel'
               )}
             </Button>
           </form>
-          <div className="mt-4 text-center text-sm space-y-2">
-            <div>
-              Don't have an account?{' '}
-              <Link to="/signup" className="text-primary hover:underline">
-                Sign up
-              </Link>
-            </div>
-            <div className="pt-2 border-t">
-              <Link to="/admin-login" className="text-sm text-muted-foreground hover:text-primary">
-                Admin Login →
-              </Link>
-            </div>
+          <div className="mt-4 text-center text-sm">
+            <Link to="/login" className="text-primary hover:underline">
+              ← Back to Tenant Login
+            </Link>
           </div>
         </CardContent>
       </Card>

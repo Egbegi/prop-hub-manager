@@ -3,13 +3,15 @@ import React from "react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Layout } from "@/components/layout/Layout";
 import { Progress } from "@/components/ui/progress";
-import { User, Home, Settings, ArrowUp, ArrowDown, FileText, Building2 } from "lucide-react";
+import { User, Home, Settings, ArrowUp, ArrowDown, FileText, Building2, Plus } from "lucide-react";
 import { useProperties } from "@/hooks/useProperties";
 import { useTenants } from "@/hooks/useTenants";
 import { useMaintenanceRequests } from "@/hooks/useMaintenanceRequests";
 import { usePayments } from "@/hooks/usePayments";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
+import { Link } from "react-router-dom";
 
 const Dashboard = () => {
   const { properties, isLoading: propertiesLoading } = useProperties();
@@ -17,14 +19,14 @@ const Dashboard = () => {
   const { maintenanceRequests, isLoading: maintenanceLoading } = useMaintenanceRequests();
   const { payments, isLoading: paymentsLoading } = usePayments();
 
-  // Calculate statistics
+  // Calculate statistics with fallbacks
   const totalProperties = properties?.length || 0;
   const totalUnits = properties?.reduce((acc, property) => acc + (property.units?.length || 0), 0) || 0;
   const activeTenants = tenants?.filter(tenant => tenant.status === 'active').length || 0;
   const pendingMaintenance = maintenanceRequests?.filter(req => req.status === 'submitted').length || 0;
   const recentPayments = payments?.slice(0, 5) || [];
 
-  // Calculate occupancy rates by property
+  // Calculate occupancy rates by property with fallbacks
   const occupancyData = properties?.map(property => {
     const totalUnits = property.units?.length || 0;
     const occupiedUnits = property.units?.filter(unit => unit.status === 'occupied').length || 0;
@@ -42,7 +44,7 @@ const Dashboard = () => {
       <Layout>
         <div className="space-y-6 animate-fade-in">
           <div>
-            <h1 className="text-3xl font-bold tracking-tight">Dashboard</h1>
+            <h1 className="text-3xl font-bold tracking-tight">Admin Dashboard</h1>
             <p className="text-muted-foreground">Overview of your property management system</p>
           </div>
           <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
@@ -64,59 +66,101 @@ const Dashboard = () => {
   return (
     <Layout>
       <div className="space-y-6 animate-fade-in">
-        <div>
-          <h1 className="text-3xl font-bold tracking-tight">Dashboard</h1>
-          <p className="text-muted-foreground">Overview of your property management system</p>
+        <div className="flex justify-between items-center">
+          <div>
+            <h1 className="text-3xl font-bold tracking-tight">Admin Dashboard</h1>
+            <p className="text-muted-foreground">Overview of your property management system</p>
+          </div>
+          <div className="flex gap-2">
+            <Button asChild>
+              <Link to="/admin/properties">
+                <Plus className="h-4 w-4 mr-2" />
+                Add Property
+              </Link>
+            </Button>
+          </div>
         </div>
 
         <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
-          <div className="stats-card">
-            <div className="flex justify-between">
-              <div>
-                <p className="text-sm font-medium text-muted-foreground">Total Properties</p>
-                <p className="text-3xl font-bold">{totalProperties}</p>
+          <Card className="stats-card">
+            <CardContent className="p-6">
+              <div className="flex justify-between">
+                <div>
+                  <p className="text-sm font-medium text-muted-foreground">Total Properties</p>
+                  <p className="text-3xl font-bold">{totalProperties}</p>
+                  {totalProperties === 0 && (
+                    <p className="text-xs text-muted-foreground mt-1">
+                      <Link to="/admin/properties" className="text-primary hover:underline">
+                        Add your first property
+                      </Link>
+                    </p>
+                  )}
+                </div>
+                <div className="h-12 w-12 rounded-full bg-primary/10 flex items-center justify-center">
+                  <Building2 className="h-6 w-6 text-primary" />
+                </div>
               </div>
-              <div className="h-12 w-12 rounded-full bg-primary/10 flex items-center justify-center">
-                <Building2 className="h-6 w-6 text-primary" />
-              </div>
-            </div>
-          </div>
+            </CardContent>
+          </Card>
           
-          <div className="stats-card">
-            <div className="flex justify-between">
-              <div>
-                <p className="text-sm font-medium text-muted-foreground">Total Units</p>
-                <p className="text-3xl font-bold">{totalUnits}</p>
+          <Card className="stats-card">
+            <CardContent className="p-6">
+              <div className="flex justify-between">
+                <div>
+                  <p className="text-sm font-medium text-muted-foreground">Total Units</p>
+                  <p className="text-3xl font-bold">{totalUnits}</p>
+                  {totalUnits === 0 && totalProperties > 0 && (
+                    <p className="text-xs text-muted-foreground mt-1">Add units to your properties</p>
+                  )}
+                </div>
+                <div className="h-12 w-12 rounded-full bg-accent/10 flex items-center justify-center">
+                  <Home className="h-6 w-6 text-accent" />
+                </div>
               </div>
-              <div className="h-12 w-12 rounded-full bg-accent/10 flex items-center justify-center">
-                <Home className="h-6 w-6 text-accent" />
-              </div>
-            </div>
-          </div>
+            </CardContent>
+          </Card>
           
-          <div className="stats-card">
-            <div className="flex justify-between">
-              <div>
-                <p className="text-sm font-medium text-muted-foreground">Active Tenants</p>
-                <p className="text-3xl font-bold">{activeTenants}</p>
+          <Card className="stats-card">
+            <CardContent className="p-6">
+              <div className="flex justify-between">
+                <div>
+                  <p className="text-sm font-medium text-muted-foreground">Active Tenants</p>
+                  <p className="text-3xl font-bold">{activeTenants}</p>
+                  {activeTenants === 0 && (
+                    <p className="text-xs text-muted-foreground mt-1">
+                      <Link to="/admin/tenants" className="text-primary hover:underline">
+                        Add tenants
+                      </Link>
+                    </p>
+                  )}
+                </div>
+                <div className="h-12 w-12 rounded-full bg-green-100 flex items-center justify-center">
+                  <User className="h-6 w-6 text-green-600" />
+                </div>
               </div>
-              <div className="h-12 w-12 rounded-full bg-green-100 flex items-center justify-center">
-                <User className="h-6 w-6 text-green-600" />
-              </div>
-            </div>
-          </div>
+            </CardContent>
+          </Card>
           
-          <div className="stats-card">
-            <div className="flex justify-between">
-              <div>
-                <p className="text-sm font-medium text-muted-foreground">Pending Maintenance</p>
-                <p className="text-3xl font-bold">{pendingMaintenance}</p>
+          <Card className="stats-card">
+            <CardContent className="p-6">
+              <div className="flex justify-between">
+                <div>
+                  <p className="text-sm font-medium text-muted-foreground">Pending Maintenance</p>
+                  <p className="text-3xl font-bold">{pendingMaintenance}</p>
+                  {pendingMaintenance === 0 && (
+                    <p className="text-xs text-green-600 mt-1">All caught up!</p>
+                  )}
+                </div>
+                <div className={`h-12 w-12 rounded-full flex items-center justify-center ${
+                  pendingMaintenance > 0 ? 'bg-red-100' : 'bg-green-100'
+                }`}>
+                  <Settings className={`h-6 w-6 ${
+                    pendingMaintenance > 0 ? 'text-red-600' : 'text-green-600'
+                  }`} />
+                </div>
               </div>
-              <div className="h-12 w-12 rounded-full bg-red-100 flex items-center justify-center">
-                <Settings className="h-6 w-6 text-red-600" />
-              </div>
-            </div>
-          </div>
+            </CardContent>
+          </Card>
         </div>
 
         <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
@@ -138,7 +182,16 @@ const Dashboard = () => {
                     </div>
                   ))
                 ) : (
-                  <p className="text-sm text-muted-foreground">No properties available</p>
+                  <div className="text-center py-8">
+                    <Building2 className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
+                    <p className="text-sm text-muted-foreground mb-4">No properties available</p>
+                    <Button asChild>
+                      <Link to="/admin/properties">
+                        <Plus className="h-4 w-4 mr-2" />
+                        Add Your First Property
+                      </Link>
+                    </Button>
+                  </div>
                 )}
               </div>
             </CardContent>
@@ -182,7 +235,10 @@ const Dashboard = () => {
                     </div>
                   ))
                 ) : (
-                  <p className="text-sm text-muted-foreground">No recent payments</p>
+                  <div className="text-center py-6">
+                    <FileText className="h-8 w-8 text-muted-foreground mx-auto mb-2" />
+                    <p className="text-sm text-muted-foreground">No payments yet</p>
+                  </div>
                 )}
               </div>
             </CardContent>
@@ -197,19 +253,32 @@ const Dashboard = () => {
             </CardHeader>
             <CardContent>
               <div className="space-y-4">
-                {tenants?.slice(0, 3).map((tenant) => (
-                  <div key={tenant.id} className="flex items-center gap-3">
-                    <div className="h-10 w-10 rounded-full bg-primary/10 flex items-center justify-center">
-                      <User className="h-5 w-5 text-primary" />
+                {tenants && tenants.length > 0 ? (
+                  tenants.slice(0, 3).map((tenant) => (
+                    <div key={tenant.id} className="flex items-center gap-3">
+                      <div className="h-10 w-10 rounded-full bg-primary/10 flex items-center justify-center">
+                        <User className="h-5 w-5 text-primary" />
+                      </div>
+                      <div>
+                        <p className="text-sm font-medium">{tenant.full_name}</p>
+                        <p className="text-xs text-muted-foreground">
+                          {new Date(tenant.created_at).toLocaleDateString()}
+                        </p>
+                      </div>
                     </div>
-                    <div>
-                      <p className="text-sm font-medium">{tenant.full_name}</p>
-                      <p className="text-xs text-muted-foreground">
-                        {new Date(tenant.created_at).toLocaleDateString()}
-                      </p>
-                    </div>
+                  ))
+                ) : (
+                  <div className="text-center py-6">
+                    <User className="h-8 w-8 text-muted-foreground mx-auto mb-2" />
+                    <p className="text-sm text-muted-foreground mb-4">No tenants yet</p>
+                    <Button size="sm" asChild>
+                      <Link to="/admin/tenants">
+                        <Plus className="h-4 w-4 mr-2" />
+                        Add Tenant
+                      </Link>
+                    </Button>
                   </div>
-                )) || <p className="text-sm text-muted-foreground">No tenants yet</p>}
+                )}
               </div>
             </CardContent>
           </Card>
@@ -221,25 +290,32 @@ const Dashboard = () => {
             </CardHeader>
             <CardContent>
               <div className="space-y-4">
-                {maintenanceRequests?.slice(0, 3).map((request) => (
-                  <div key={request.id} className="flex items-center gap-3">
-                    <div className={`h-10 w-10 rounded-full flex items-center justify-center ${
-                      request.status === 'submitted' ? 'bg-red-100' : 
-                      request.status === 'in_progress' ? 'bg-yellow-100' : 'bg-green-100'
-                    }`}>
-                      <Settings className={`h-5 w-5 ${
-                        request.status === 'submitted' ? 'text-red-600' : 
-                        request.status === 'in_progress' ? 'text-yellow-600' : 'text-green-600'
-                      }`} />
+                {maintenanceRequests && maintenanceRequests.length > 0 ? (
+                  maintenanceRequests.slice(0, 3).map((request) => (
+                    <div key={request.id} className="flex items-center gap-3">
+                      <div className={`h-10 w-10 rounded-full flex items-center justify-center ${
+                        request.status === 'submitted' ? 'bg-red-100' : 
+                        request.status === 'in_progress' ? 'bg-yellow-100' : 'bg-green-100'
+                      }`}>
+                        <Settings className={`h-5 w-5 ${
+                          request.status === 'submitted' ? 'text-red-600' : 
+                          request.status === 'in_progress' ? 'text-yellow-600' : 'text-green-600'
+                        }`} />
+                      </div>
+                      <div>
+                        <p className="text-sm font-medium">{request.title}</p>
+                        <Badge variant={request.status === 'resolved' ? 'default' : 'secondary'}>
+                          {request.status.replace('_', ' ')}
+                        </Badge>
+                      </div>
                     </div>
-                    <div>
-                      <p className="text-sm font-medium">{request.title}</p>
-                      <Badge variant={request.status === 'resolved' ? 'default' : 'secondary'}>
-                        {request.status.replace('_', ' ')}
-                      </Badge>
-                    </div>
+                  ))
+                ) : (
+                  <div className="text-center py-6">
+                    <Settings className="h-8 w-8 text-muted-foreground mx-auto mb-2" />
+                    <p className="text-sm text-muted-foreground">No maintenance requests</p>
                   </div>
-                )) || <p className="text-sm text-muted-foreground">No maintenance requests</p>}
+                )}
               </div>
             </CardContent>
           </Card>
@@ -251,19 +327,32 @@ const Dashboard = () => {
             </CardHeader>
             <CardContent>
               <div className="space-y-4">
-                {properties?.slice(0, 3).map((property) => (
-                  <div key={property.id} className="flex items-center gap-3">
-                    <div className="h-10 w-10 rounded-full bg-primary/10 flex items-center justify-center">
-                      <Building2 className="h-5 w-5 text-primary" />
+                {properties && properties.length > 0 ? (
+                  properties.slice(0, 3).map((property) => (
+                    <div key={property.id} className="flex items-center gap-3">
+                      <div className="h-10 w-10 rounded-full bg-primary/10 flex items-center justify-center">
+                        <Building2 className="h-5 w-5 text-primary" />
+                      </div>
+                      <div>
+                        <p className="text-sm font-medium">{property.name}</p>
+                        <p className="text-xs text-muted-foreground">
+                          {property.units?.length || 0} units
+                        </p>
+                      </div>
                     </div>
-                    <div>
-                      <p className="text-sm font-medium">{property.name}</p>
-                      <p className="text-xs text-muted-foreground">
-                        {property.units?.length || 0} units
-                      </p>
-                    </div>
+                  ))
+                ) : (
+                  <div className="text-center py-6">
+                    <Building2 className="h-8 w-8 text-muted-foreground mx-auto mb-2" />
+                    <p className="text-sm text-muted-foreground mb-4">No properties added yet</p>
+                    <Button size="sm" asChild>
+                      <Link to="/admin/properties">
+                        <Plus className="h-4 w-4 mr-2" />
+                        Add Property
+                      </Link>
+                    </Button>
                   </div>
-                )) || <p className="text-sm text-muted-foreground">No properties added yet</p>}
+                )}
               </div>
             </CardContent>
           </Card>

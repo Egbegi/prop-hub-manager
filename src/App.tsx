@@ -15,6 +15,7 @@ import NotFound from "./pages/NotFound";
 // Tenant Interface Pages
 import Landing from "./pages/Landing";
 import Login from "./pages/Login";
+import AdminLogin from "./pages/AdminLogin";
 import Signup from "./pages/Signup";
 import TenantDashboard from "./pages/tenant/Dashboard";
 import Lease from "./pages/tenant/Lease";
@@ -35,6 +36,7 @@ const App = () => (
           {/* Public landing page - set as the default route */}
           <Route path="/" element={<Landing />} />
           <Route path="/login" element={<Login />} />
+          <Route path="/admin-login" element={<AdminLogin />} />
           <Route path="/signup" element={<Signup />} />
           
           {/* Tenant portal routes - protected */}

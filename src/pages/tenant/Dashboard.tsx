@@ -5,19 +5,27 @@ import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle }
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Progress } from "@/components/ui/progress";
-import { FileText, CreditCard, Bell, Wrench, Calendar, ArrowRight, CheckCircle, Clock, AlertTriangle } from "lucide-react";
+import { FileText, CreditCard, Bell, Wrench, Calendar, ArrowRight, CheckCircle, Clock, AlertTriangle, Home, User } from "lucide-react";
 import { Link } from "react-router-dom";
+import { useAuth } from "@/hooks/useAuth";
+import { usePayments } from "@/hooks/usePayments";
+import { useMaintenanceRequests } from "@/hooks/useMaintenanceRequests";
+import { Skeleton } from "@/components/ui/skeleton";
 
 const TenantDashboard = () => {
-  // Mock tenant data
+  const { user } = useAuth();
+  const { payments, isLoading: paymentsLoading } = usePayments();
+  const { maintenanceRequests, isLoading: maintenanceLoading } = useMaintenanceRequests();
+
+  // Mock tenant data - in a real app, this would come from the database
   const tenant = {
-    name: "John Doe",
+    name: user?.profile?.full_name || "Tenant User",
     leaseStatus: "Active",
     leaseEnd: "May 15, 2025",
     nextPayment: {
       amount: "$1,200.00",
       dueDate: "April 01, 2025",
-      status: "upcoming", // upcoming, due, overdue, paid
+      status: "upcoming",
       daysUntilDue: 5,
     },
     property: {
@@ -60,22 +68,30 @@ const TenantDashboard = () => {
 
   const paymentStatus = getPaymentStatusStyles(tenant.nextPayment.status);
 
-  // Mock recent activity data
+  // Mock recent activity data with real data if available
   const recentActivity = [
     {
       id: 1,
       type: "payment",
       title: "Rent Payment",
-      description: "March 2025 rent payment processed",
-      date: "Mar 1, 2025",
+      description: payments && payments.length > 0 ? 
+        `Payment of $${payments[0].amount} processed` : 
+        "March 2025 rent payment processed",
+      date: payments && payments.length > 0 ? 
+        new Date(payments[0].payment_date).toLocaleDateString() : 
+        "Mar 1, 2025",
       status: "completed",
     },
     {
       id: 2,
       type: "maintenance",
       title: "Maintenance Request",
-      description: "Kitchen sink repair completed",
-      date: "Feb 25, 2025",
+      description: maintenanceRequests && maintenanceRequests.length > 0 ? 
+        maintenanceRequests[0].title : 
+        "Kitchen sink repair completed",
+      date: maintenanceRequests && maintenanceRequests.length > 0 ? 
+        new Date(maintenanceRequests[0].submitted_at).toLocaleDateString() : 
+        "Feb 25, 2025",
       status: "completed",
     },
     {
@@ -96,39 +112,67 @@ const TenantDashboard = () => {
     },
   ];
 
-  // Mock maintenance requests
-  const maintenanceRequests = [
-    {
-      id: 1,
-      title: "Bathroom Leak",
-      status: "in_progress",
-      dateSubmitted: "Mar 15, 2025",
-      lastUpdated: "Mar 16, 2025",
-      progress: 50,
-    },
-    {
-      id: 2,
-      title: "AC Not Working",
-      status: "pending",
-      dateSubmitted: "Mar 20, 2025",
-      lastUpdated: "Mar 20, 2025",
-      progress: 10,
-    },
-  ];
+  // Use real maintenance requests or show placeholder
+  const displayMaintenanceRequests = maintenanceRequests && maintenanceRequests.length > 0 
+    ? maintenanceRequests.slice(0, 2).map(req => ({
+        id: req.id,
+        title: req.title,
+        status: req.status,
+        dateSubmitted: new Date(req.submitted_at).toLocaleDateString(),
+        lastUpdated: new Date(req.submitted_at).toLocaleDateString(),
+        progress: req.status === 'resolved' ? 100 : req.status === 'in_progress' ? 50 : 10,
+      }))
+    : [
+        {
+          id: 1,
+          title: "Sample Maintenance Request",
+          status: "pending",
+          dateSubmitted: "Mar 20, 2025",
+          lastUpdated: "Mar 20, 2025",
+          progress: 10,
+        },
+      ];
 
   // Get status badge for maintenance requests
   const getStatusBadge = (status: string) => {
     switch (status) {
-      case "completed":
+      case "resolved":
         return <Badge variant="outline" className="bg-green-500/10 text-green-500 border-green-500/20">Completed</Badge>;
       case "in_progress":
         return <Badge variant="outline" className="bg-primary/10 text-primary border-primary/20">In Progress</Badge>;
+      case "submitted":
       case "pending":
         return <Badge variant="outline" className="bg-yellow-500/10 text-yellow-500 border-yellow-500/20">Pending</Badge>;
       default:
         return <Badge variant="outline">Unknown</Badge>;
     }
   };
+
+  if (paymentsLoading || maintenanceLoading) {
+    return (
+      <TenantLayout>
+        <div className="container mx-auto py-6 px-4 max-w-screen-2xl">
+          <div className="mb-8">
+            <Skeleton className="h-8 w-64 mb-2" />
+            <Skeleton className="h-4 w-96" />
+          </div>
+          <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3 mb-8">
+            {[...Array(3)].map((_, i) => (
+              <Card key={i}>
+                <CardHeader>
+                  <Skeleton className="h-6 w-32" />
+                  <Skeleton className="h-4 w-48" />
+                </CardHeader>
+                <CardContent>
+                  <Skeleton className="h-20 w-full" />
+                </CardContent>
+              </Card>
+            ))}
+          </div>
+        </div>
+      </TenantLayout>
+    );
+  }
 
   return (
     <TenantLayout>
@@ -164,7 +208,10 @@ const TenantDashboard = () => {
           {/* Property Information Card */}
           <Card>
             <CardHeader className="pb-2">
-              <CardTitle className="text-lg">Your Residence</CardTitle>
+              <CardTitle className="text-lg flex items-center gap-2">
+                <Home className="h-5 w-5" />
+                Your Residence
+              </CardTitle>
               <CardDescription>Current property information</CardDescription>
             </CardHeader>
             <CardContent>
@@ -187,7 +234,10 @@ const TenantDashboard = () => {
           {/* Lease Status Card */}
           <Card>
             <CardHeader className="pb-2">
-              <CardTitle className="text-lg">Lease Status</CardTitle>
+              <CardTitle className="text-lg flex items-center gap-2">
+                <FileText className="h-5 w-5" />
+                Lease Status
+              </CardTitle>
               <CardDescription>Current lease information</CardDescription>
             </CardHeader>
             <CardContent>
@@ -219,31 +269,41 @@ const TenantDashboard = () => {
           {/* Payment Card */}
           <Card>
             <CardHeader className="pb-2">
-              <CardTitle className="text-lg">Next Payment</CardTitle>
-              <CardDescription>Upcoming rent payment</CardDescription>
+              <CardTitle className="text-lg flex items-center gap-2">
+                <CreditCard className="h-5 w-5" />
+                Next Payment
+              </CardTitle>
+              <CardDescription>
+                {payments && payments.length > 0 ? "Recent payment status" : "Upcoming rent payment"}
+              </CardDescription>
             </CardHeader>
             <CardContent>
               <div className="space-y-4">
                 <div className="flex justify-between items-center">
-                  <div className="text-2xl font-bold">{tenant.nextPayment.amount}</div>
+                  <div className="text-2xl font-bold">
+                    {payments && payments.length > 0 ? `$${payments[0].amount}` : tenant.nextPayment.amount}
+                  </div>
                   <div className={`flex items-center gap-1 text-xs px-2.5 py-1 rounded-full border ${paymentStatus.className}`}>
                     {paymentStatus.icon}
-                    <span className="capitalize">{tenant.nextPayment.status}</span>
+                    <span className="capitalize">
+                      {payments && payments.length > 0 ? payments[0].status : tenant.nextPayment.status}
+                    </span>
                   </div>
                 </div>
                 <div className="flex items-center gap-2">
                   <Calendar className="h-4 w-4 text-muted-foreground" />
-                  <span className="text-sm">Due on {tenant.nextPayment.dueDate}</span>
+                  <span className="text-sm">
+                    {payments && payments.length > 0 
+                      ? `Last payment: ${new Date(payments[0].payment_date).toLocaleDateString()}`
+                      : `Due on ${tenant.nextPayment.dueDate}`
+                    }
+                  </span>
                 </div>
                 <div className="text-sm text-muted-foreground">
-                  {tenant.nextPayment.status === "upcoming" && 
-                    `${tenant.nextPayment.daysUntilDue} days until payment is due`}
-                  {tenant.nextPayment.status === "due" && 
-                    "Payment is due today"}
-                  {tenant.nextPayment.status === "overdue" && 
-                    "Payment is overdue. Please make payment as soon as possible."}
-                  {tenant.nextPayment.status === "paid" && 
-                    "Thank you for your payment!"}
+                  {payments && payments.length > 0 
+                    ? "Thank you for your recent payment!"
+                    : `${tenant.nextPayment.daysUntilDue} days until payment is due`
+                  }
                 </div>
               </div>
             </CardContent>
@@ -304,12 +364,17 @@ const TenantDashboard = () => {
           <Card>
             <CardHeader>
               <CardTitle>Maintenance Requests</CardTitle>
-              <CardDescription>Active and recent maintenance issues</CardDescription>
+              <CardDescription>
+                {maintenanceRequests && maintenanceRequests.length > 0 
+                  ? "Your active maintenance requests" 
+                  : "No active maintenance requests"
+                }
+              </CardDescription>
             </CardHeader>
             <CardContent>
               <div className="space-y-6">
-                {maintenanceRequests.length > 0 ? (
-                  maintenanceRequests.map((request) => (
+                {displayMaintenanceRequests.length > 0 ? (
+                  displayMaintenanceRequests.map((request) => (
                     <div key={request.id} className="space-y-2">
                       <div className="flex justify-between items-center">
                         <h4 className="font-medium">{request.title}</h4>
@@ -336,33 +401,26 @@ const TenantDashboard = () => {
                     <p className="text-sm text-muted-foreground mb-4">
                       You don't have any active maintenance requests at the moment.
                     </p>
-                    <Button size="sm" asChild>
-                      <Link to="/tenant/maintenance">
-                        Submit New Request
-                      </Link>
-                    </Button>
                   </div>
                 )}
               </div>
             </CardContent>
-            {maintenanceRequests.length > 0 && (
-              <CardFooter>
-                <div className="flex items-center w-full justify-between">
-                  <Button variant="ghost" size="sm" asChild>
-                    <Link to="/tenant/maintenance">
-                      View All Requests
-                      <ArrowRight className="ml-2 h-4 w-4" />
-                    </Link>
-                  </Button>
-                  <Button size="sm" asChild>
-                    <Link to="/tenant/maintenance/new">
-                      New Request
-                      <Wrench className="ml-2 h-4 w-4" />
-                    </Link>
-                  </Button>
-                </div>
-              </CardFooter>
-            )}
+            <CardFooter>
+              <div className="flex items-center w-full justify-between">
+                <Button variant="ghost" size="sm" asChild>
+                  <Link to="/tenant/maintenance">
+                    View All Requests
+                    <ArrowRight className="ml-2 h-4 w-4" />
+                  </Link>
+                </Button>
+                <Button size="sm" asChild>
+                  <Link to="/tenant/maintenance">
+                    New Request
+                    <Wrench className="ml-2 h-4 w-4" />
+                  </Link>
+                </Button>
+              </div>
+            </CardFooter>
           </Card>
         </div>
 
@@ -387,7 +445,7 @@ const TenantDashboard = () => {
                 </Link>
               </Button>
               <Button variant="outline" className="h-auto flex flex-col items-center gap-2 p-4" asChild>
-                <Link to="/tenant/maintenance/new">
+                <Link to="/tenant/maintenance">
                   <Wrench className="h-6 w-6" />
                   <span>Submit Repair</span>
                 </Link>
