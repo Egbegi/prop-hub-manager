@@ -16,6 +16,11 @@ import Landing from "./pages/Landing";
 import Login from "./pages/Login";
 import Signup from "./pages/Signup";
 import TenantDashboard from "./pages/tenant/Dashboard";
+import Lease from "./pages/tenant/Lease";
+import Payments from "./pages/tenant/Payments";
+import TenantMaintenance from "./pages/tenant/Maintenance";
+import Messages from "./pages/tenant/Messages";
+import Settings from "./pages/tenant/Settings";
 
 const queryClient = new QueryClient();
 
@@ -33,6 +38,11 @@ const App = () => (
           
           {/* Tenant portal routes */}
           <Route path="/tenant/dashboard" element={<TenantDashboard />} />
+          <Route path="/tenant/lease" element={<Lease />} />
+          <Route path="/tenant/payments" element={<Payments />} />
+          <Route path="/tenant/maintenance" element={<TenantMaintenance />} />
+          <Route path="/tenant/messages" element={<Messages />} />
+          <Route path="/tenant/settings" element={<Settings />} />
           
           {/* Admin/Property Manager routes */}
           <Route path="/admin" element={<Navigate to="/admin/dashboard" replace />} />
