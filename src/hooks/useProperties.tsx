@@ -6,6 +6,12 @@ import type { Tables, TablesInsert } from '@/integrations/supabase/types';
 
 type Property = Tables<'properties'>;
 type PropertyInsert = TablesInsert<'properties'>;
+type Unit = Tables<'units'>;
+
+// Extended property type with units
+type PropertyWithUnits = Property & {
+  units?: Unit[];
+};
 
 export const useProperties = () => {
   const { toast } = useToast();
@@ -17,14 +23,17 @@ export const useProperties = () => {
     error,
   } = useQuery({
     queryKey: ['properties'],
-    queryFn: async () => {
+    queryFn: async (): Promise<PropertyWithUnits[]> => {
       const { data, error } = await supabase
         .from('properties')
-        .select('*')
+        .select(`
+          *,
+          units (*)
+        `)
         .order('created_at', { ascending: false });
 
       if (error) throw error;
-      return data;
+      return data || [];
     },
   });
 

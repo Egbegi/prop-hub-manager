@@ -164,7 +164,7 @@ const Dashboard = () => {
                         </div>
                         <div>
                           <p className="text-sm font-medium">
-                            {payment.tenants?.full_name || 'Unknown Tenant'}
+                            Payment #{payment.id.slice(0, 8)}
                           </p>
                           <Badge variant={payment.status === 'verified' ? 'default' : 'secondary'}>
                             {payment.status}
