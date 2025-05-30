@@ -4,6 +4,7 @@ import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
+import { AuthGuard } from "@/components/auth/AuthGuard";
 import Dashboard from "./pages/Dashboard";
 import Properties from "./pages/Properties";
 import Tenants from "./pages/Tenants";
@@ -36,21 +37,65 @@ const App = () => (
           <Route path="/login" element={<Login />} />
           <Route path="/signup" element={<Signup />} />
           
-          {/* Tenant portal routes */}
-          <Route path="/tenant/dashboard" element={<TenantDashboard />} />
-          <Route path="/tenant/lease" element={<Lease />} />
-          <Route path="/tenant/payments" element={<Payments />} />
-          <Route path="/tenant/maintenance" element={<TenantMaintenance />} />
-          <Route path="/tenant/messages" element={<Messages />} />
-          <Route path="/tenant/settings" element={<Settings />} />
+          {/* Tenant portal routes - protected */}
+          <Route path="/tenant/dashboard" element={
+            <AuthGuard requireTenant>
+              <TenantDashboard />
+            </AuthGuard>
+          } />
+          <Route path="/tenant/lease" element={
+            <AuthGuard requireTenant>
+              <Lease />
+            </AuthGuard>
+          } />
+          <Route path="/tenant/payments" element={
+            <AuthGuard requireTenant>
+              <Payments />
+            </AuthGuard>
+          } />
+          <Route path="/tenant/maintenance" element={
+            <AuthGuard requireTenant>
+              <TenantMaintenance />
+            </AuthGuard>
+          } />
+          <Route path="/tenant/messages" element={
+            <AuthGuard requireTenant>
+              <Messages />
+            </AuthGuard>
+          } />
+          <Route path="/tenant/settings" element={
+            <AuthGuard requireTenant>
+              <Settings />
+            </AuthGuard>
+          } />
           
-          {/* Admin/Property Manager routes */}
+          {/* Admin/Property Manager routes - protected */}
           <Route path="/admin" element={<Navigate to="/admin/dashboard" replace />} />
-          <Route path="/admin/dashboard" element={<Dashboard />} />
-          <Route path="/admin/properties" element={<Properties />} />
-          <Route path="/admin/tenants" element={<Tenants />} />
-          <Route path="/admin/maintenance" element={<Maintenance />} />
-          <Route path="/admin/communications" element={<Communications />} />
+          <Route path="/admin/dashboard" element={
+            <AuthGuard requireAdmin>
+              <Dashboard />
+            </AuthGuard>
+          } />
+          <Route path="/admin/properties" element={
+            <AuthGuard requireAdmin>
+              <Properties />
+            </AuthGuard>
+          } />
+          <Route path="/admin/tenants" element={
+            <AuthGuard requireAdmin>
+              <Tenants />
+            </AuthGuard>
+          } />
+          <Route path="/admin/maintenance" element={
+            <AuthGuard requireAdmin>
+              <Maintenance />
+            </AuthGuard>
+          } />
+          <Route path="/admin/communications" element={
+            <AuthGuard requireAdmin>
+              <Communications />
+            </AuthGuard>
+          } />
           
           {/* Fallback route */}
           <Route path="*" element={<NotFound />} />
