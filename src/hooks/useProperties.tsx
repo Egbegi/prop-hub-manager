@@ -28,13 +28,26 @@ export const useProperties = () => {
         .from('properties')
         .select(`
           *,
-          units (*)
+          units (
+            id,
+            unit_number,
+            floor,
+            size,
+            status,
+            assigned_to,
+            created_at
+          )
         `)
         .order('created_at', { ascending: false });
 
-      if (error) throw error;
+      if (error) {
+        console.error('Error fetching properties:', error);
+        throw error;
+      }
       return data || [];
     },
+    staleTime: 5 * 60 * 1000, // 5 minutes
+    cacheTime: 10 * 60 * 1000, // 10 minutes
   });
 
   const createProperty = useMutation({

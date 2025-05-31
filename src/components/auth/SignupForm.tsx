@@ -6,19 +6,36 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Loader2, Lock, Mail, User } from 'lucide-react';
+import { Loader2, Lock, Mail, User, AlertCircle } from 'lucide-react';
 import { Link, Navigate } from 'react-router-dom';
+import { Alert, AlertDescription } from '@/components/ui/alert';
 
 export const SignupForm = () => {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [fullName, setFullName] = useState('');
   const [userType, setUserType] = useState<'tenant' | 'admin'>('tenant');
+  const [signupError, setSignupError] = useState<string | null>(null);
   const { signUp, loading, user } = useAuth();
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    await signUp(email, password, fullName, userType);
+    setSignupError(null);
+    
+    if (!email.trim() || !password || !fullName.trim()) {
+      setSignupError('Please fill in all required fields.');
+      return;
+    }
+
+    if (password.length < 6) {
+      setSignupError('Password must be at least 6 characters long.');
+      return;
+    }
+
+    const result = await signUp(email, password, fullName, userType);
+    if (result.error) {
+      setSignupError(result.error.message);
+    }
   };
 
   if (user) {
@@ -26,7 +43,7 @@ export const SignupForm = () => {
   }
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gray-50">
+    <div className="min-h-screen flex items-center justify-center bg-gray-50 px-4">
       <Card className="w-full max-w-md">
         <CardHeader className="space-y-1">
           <CardTitle className="text-2xl text-center">Create Account</CardTitle>
@@ -35,6 +52,13 @@ export const SignupForm = () => {
           </p>
         </CardHeader>
         <CardContent>
+          {signupError && (
+            <Alert variant="destructive" className="mb-4">
+              <AlertCircle className="h-4 w-4" />
+              <AlertDescription>{signupError}</AlertDescription>
+            </Alert>
+          )}
+          
           <form onSubmit={handleSubmit} className="space-y-4">
             <div className="space-y-2">
               <Label htmlFor="fullName">Full Name</Label>
@@ -48,6 +72,7 @@ export const SignupForm = () => {
                   onChange={(e) => setFullName(e.target.value)}
                   className="pl-10"
                   required
+                  disabled={loading}
                 />
               </div>
             </div>
@@ -63,6 +88,7 @@ export const SignupForm = () => {
                   onChange={(e) => setEmail(e.target.value)}
                   className="pl-10"
                   required
+                  disabled={loading}
                 />
               </div>
             </div>
@@ -78,12 +104,17 @@ export const SignupForm = () => {
                   onChange={(e) => setPassword(e.target.value)}
                   className="pl-10"
                   required
+                  disabled={loading}
+                  minLength={6}
                 />
               </div>
+              <p className="text-xs text-muted-foreground">
+                Password must be at least 6 characters long
+              </p>
             </div>
             <div className="space-y-2">
               <Label htmlFor="userType">Account Type</Label>
-              <Select value={userType} onValueChange={(value: 'tenant' | 'admin') => setUserType(value)}>
+              <Select value={userType} onValueChange={(value: 'tenant' | 'admin') => setUserType(value)} disabled={loading}>
                 <SelectTrigger>
                   <SelectValue placeholder="Select account type" />
                 </SelectTrigger>

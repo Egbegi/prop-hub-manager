@@ -1,7 +1,8 @@
 
 import { useAuth } from '@/hooks/useAuth';
 import { Navigate, useLocation } from 'react-router-dom';
-import { Loader2 } from 'lucide-react';
+import { Loader2, AlertCircle } from 'lucide-react';
+import { Alert, AlertDescription } from '@/components/ui/alert';
 
 interface AuthGuardProps {
   children: React.ReactNode;
@@ -22,7 +23,10 @@ export const AuthGuard = ({
   if (loading) {
     return (
       <div className="flex items-center justify-center min-h-screen">
-        <Loader2 className="h-8 w-8 animate-spin" />
+        <div className="text-center">
+          <Loader2 className="h-8 w-8 animate-spin mx-auto mb-4" />
+          <p className="text-muted-foreground">Loading...</p>
+        </div>
       </div>
     );
   }
@@ -32,11 +36,33 @@ export const AuthGuard = ({
   }
 
   if (requireAdmin && !isAdmin) {
-    return <Navigate to="/tenant/dashboard" replace />;
+    return (
+      <div className="flex items-center justify-center min-h-screen p-4">
+        <Alert variant="destructive" className="max-w-md">
+          <AlertCircle className="h-4 w-4" />
+          <AlertDescription>
+            Access denied. Admin privileges required.
+            <br />
+            <Navigate to="/tenant/dashboard" replace />
+          </AlertDescription>
+        </Alert>
+      </div>
+    );
   }
 
   if (requireTenant && !isTenant) {
-    return <Navigate to="/admin/dashboard" replace />;
+    return (
+      <div className="flex items-center justify-center min-h-screen p-4">
+        <Alert variant="destructive" className="max-w-md">
+          <AlertCircle className="h-4 w-4" />
+          <AlertDescription>
+            Access denied. Tenant privileges required.
+            <br />
+            <Navigate to="/admin/dashboard" replace />
+          </AlertDescription>
+        </Alert>
+      </div>
+    );
   }
 
   return <>{children}</>;
