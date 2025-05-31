@@ -5,8 +5,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Loader2, Lock, Mail, User, AlertCircle } from 'lucide-react';
+import { Loader2, Lock, Mail, User, AlertCircle, Home } from 'lucide-react';
 import { Link, Navigate } from 'react-router-dom';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 
@@ -14,7 +13,6 @@ export const SignupForm = () => {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [fullName, setFullName] = useState('');
-  const [userType, setUserType] = useState<'tenant' | 'admin'>('tenant');
   const [signupError, setSignupError] = useState<string | null>(null);
   const { signUp, loading, user } = useAuth();
 
@@ -32,23 +30,27 @@ export const SignupForm = () => {
       return;
     }
 
-    const result = await signUp(email, password, fullName, userType);
+    // Always register as tenant
+    const result = await signUp(email, password, fullName, 'tenant');
     if (result.error) {
       setSignupError(result.error.message);
     }
   };
 
   if (user) {
-    return <Navigate to="/login" replace />;
+    return <Navigate to="/tenant/dashboard" replace />;
   }
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-gray-50 px-4">
       <Card className="w-full max-w-md">
         <CardHeader className="space-y-1">
-          <CardTitle className="text-2xl text-center">Create Account</CardTitle>
+          <div className="flex items-center justify-center mb-2">
+            <Home className="h-8 w-8 text-primary" />
+          </div>
+          <CardTitle className="text-2xl text-center">Create Tenant Account</CardTitle>
           <p className="text-sm text-muted-foreground text-center">
-            Join our housing management system
+            Join our housing management system as a tenant
           </p>
         </CardHeader>
         <CardContent>
@@ -112,18 +114,6 @@ export const SignupForm = () => {
                 Password must be at least 6 characters long
               </p>
             </div>
-            <div className="space-y-2">
-              <Label htmlFor="userType">Account Type</Label>
-              <Select value={userType} onValueChange={(value: 'tenant' | 'admin') => setUserType(value)} disabled={loading}>
-                <SelectTrigger>
-                  <SelectValue placeholder="Select account type" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="tenant">Tenant</SelectItem>
-                  <SelectItem value="admin">Admin</SelectItem>
-                </SelectContent>
-              </Select>
-            </div>
             <Button type="submit" className="w-full" disabled={loading}>
               {loading ? (
                 <>
@@ -131,7 +121,7 @@ export const SignupForm = () => {
                   Creating account...
                 </>
               ) : (
-                'Create Account'
+                'Create Tenant Account'
               )}
             </Button>
           </form>

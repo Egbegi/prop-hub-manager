@@ -13,7 +13,7 @@ export const LoginForm = () => {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [loginError, setLoginError] = useState<string | null>(null);
-  const { signIn, loading, user, isAdmin } = useAuth();
+  const { signIn, loading, user, isAdmin, isTenant } = useAuth();
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -30,8 +30,16 @@ export const LoginForm = () => {
     }
   };
 
+  // If user is logged in, redirect based on their role
   if (user) {
-    return <Navigate to={isAdmin ? '/admin/dashboard' : '/tenant/dashboard'} replace />;
+    if (isAdmin) {
+      return <Navigate to="/admin/dashboard" replace />;
+    } else if (isTenant) {
+      return <Navigate to="/tenant/dashboard" replace />;
+    } else {
+      // User exists but no role assigned
+      setLoginError('Account setup incomplete. Please contact support.');
+    }
   }
 
   return (

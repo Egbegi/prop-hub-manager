@@ -42,8 +42,9 @@ export const AuthGuard = ({
           <AlertCircle className="h-4 w-4" />
           <AlertDescription>
             Access denied. Admin privileges required.
-            <br />
-            <Navigate to="/tenant/dashboard" replace />
+            <div className="mt-2">
+              <Navigate to={isTenant ? "/tenant/dashboard" : "/login"} replace />
+            </div>
           </AlertDescription>
         </Alert>
       </div>
@@ -57,8 +58,9 @@ export const AuthGuard = ({
           <AlertCircle className="h-4 w-4" />
           <AlertDescription>
             Access denied. Tenant privileges required.
-            <br />
-            <Navigate to="/admin/dashboard" replace />
+            <div className="mt-2">
+              <Navigate to={isAdmin ? "/admin/dashboard" : "/login"} replace />
+            </div>
           </AlertDescription>
         </Alert>
       </div>

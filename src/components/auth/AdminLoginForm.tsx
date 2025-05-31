@@ -27,16 +27,20 @@ export const AdminLoginForm = () => {
     const result = await signIn(email, password);
     if (result.error) {
       setLoginError(result.error.message);
-    } else if (result.data?.user && !isAdmin) {
-      setLoginError('Access denied. Admin credentials required.');
     }
   };
 
+  // If user is logged in, redirect based on their role
   if (user) {
-    if (!isAdmin) {
-      return <Navigate to="/tenant/dashboard" replace />;
+    if (isAdmin) {
+      return <Navigate to="/admin/dashboard" replace />;
+    } else {
+      // If not an admin, show access denied and redirect to tenant dashboard
+      setLoginError('Access denied. Admin credentials required.');
+      setTimeout(() => {
+        window.location.href = '/tenant/dashboard';
+      }, 2000);
     }
-    return <Navigate to="/admin/dashboard" replace />;
   }
 
   return (
@@ -103,10 +107,15 @@ export const AdminLoginForm = () => {
               )}
             </Button>
           </form>
-          <div className="mt-4 text-center text-sm">
-            <Link to="/login" className="text-primary hover:underline">
-              ← Back to Tenant Login
-            </Link>
+          <div className="mt-4 text-center text-sm space-y-2">
+            <div>
+              <Link to="/login" className="text-primary hover:underline">
+                ← Back to Tenant Login
+              </Link>
+            </div>
+            <div className="text-xs text-muted-foreground">
+              Admin access only. Contact IT if you need assistance.
+            </div>
           </div>
         </CardContent>
       </Card>
