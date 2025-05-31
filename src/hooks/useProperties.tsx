@@ -35,7 +35,8 @@ export const useProperties = () => {
             size,
             status,
             assigned_to,
-            created_at
+            created_at,
+            property_id
           )
         `)
         .order('created_at', { ascending: false });
@@ -47,7 +48,7 @@ export const useProperties = () => {
       return data || [];
     },
     staleTime: 5 * 60 * 1000, // 5 minutes
-    cacheTime: 10 * 60 * 1000, // 10 minutes
+    gcTime: 10 * 60 * 1000, // 10 minutes (replaces cacheTime)
   });
 
   const createProperty = useMutation({
