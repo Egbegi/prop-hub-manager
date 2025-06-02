@@ -1,5 +1,5 @@
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useAuth } from '@/hooks/useAuth';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -14,6 +14,13 @@ export const LoginForm = () => {
   const [password, setPassword] = useState('');
   const [loginError, setLoginError] = useState<string | null>(null);
   const { signIn, loading, user, isAdmin, isTenant } = useAuth();
+
+  // Handle users with no profile using useEffect instead of during render
+  useEffect(() => {
+    if (user && !isAdmin && !isTenant) {
+      setLoginError('Account setup incomplete. Please contact support.');
+    }
+  }, [user, isAdmin, isTenant]);
 
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
@@ -30,22 +37,19 @@ export const LoginForm = () => {
       if (result.error) {
         setLoginError(result.error.message);
       }
-      // Don't handle redirect here - let useAuth handle it
     } catch (error: any) {
       setLoginError(error.message || 'An unexpected error occurred.');
     }
   };
 
-  // If user is logged in, redirect based on their role
+  // If user is logged in with proper role, redirect
   if (user) {
     if (isAdmin) {
       return <Navigate to="/admin/dashboard" replace />;
     } else if (isTenant) {
       return <Navigate to="/tenant/dashboard" replace />;
-    } else {
-      // User exists but no role assigned
-      setLoginError('Account setup incomplete. Please contact support.');
     }
+    // If user exists but no role, stay on page and show error (handled by useEffect)
   }
 
   return (
