@@ -16,8 +16,9 @@ export const SignupForm = () => {
   const [signupError, setSignupError] = useState<string | null>(null);
   const { signUp, loading, user } = useAuth();
 
-  const handleSubmit = async (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
+    e.stopPropagation();
     setSignupError(null);
     
     if (!email.trim() || !password || !fullName.trim()) {
@@ -30,10 +31,14 @@ export const SignupForm = () => {
       return;
     }
 
-    // Always register as tenant
-    const result = await signUp(email, password, fullName, 'tenant');
-    if (result.error) {
-      setSignupError(result.error.message);
+    try {
+      // Always register as tenant
+      const result = await signUp(email, password, fullName, 'tenant');
+      if (result.error) {
+        setSignupError(result.error.message);
+      }
+    } catch (error: any) {
+      setSignupError(error.message || 'An unexpected error occurred.');
     }
   };
 
@@ -75,6 +80,7 @@ export const SignupForm = () => {
                   className="pl-10"
                   required
                   disabled={loading}
+                  autoComplete="name"
                 />
               </div>
             </div>
@@ -91,6 +97,7 @@ export const SignupForm = () => {
                   className="pl-10"
                   required
                   disabled={loading}
+                  autoComplete="email"
                 />
               </div>
             </div>
@@ -108,6 +115,7 @@ export const SignupForm = () => {
                   required
                   disabled={loading}
                   minLength={6}
+                  autoComplete="new-password"
                 />
               </div>
               <p className="text-xs text-muted-foreground">

@@ -15,8 +15,9 @@ export const LoginForm = () => {
   const [loginError, setLoginError] = useState<string | null>(null);
   const { signIn, loading, user, isAdmin, isTenant } = useAuth();
 
-  const handleSubmit = async (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
+    e.stopPropagation();
     setLoginError(null);
     
     if (!email.trim() || !password) {
@@ -24,9 +25,14 @@ export const LoginForm = () => {
       return;
     }
 
-    const result = await signIn(email, password);
-    if (result.error) {
-      setLoginError(result.error.message);
+    try {
+      const result = await signIn(email, password);
+      if (result.error) {
+        setLoginError(result.error.message);
+      }
+      // Don't handle redirect here - let useAuth handle it
+    } catch (error: any) {
+      setLoginError(error.message || 'An unexpected error occurred.');
     }
   };
 
@@ -76,6 +82,7 @@ export const LoginForm = () => {
                   className="pl-10"
                   required
                   disabled={loading}
+                  autoComplete="email"
                 />
               </div>
             </div>
@@ -92,6 +99,7 @@ export const LoginForm = () => {
                   className="pl-10"
                   required
                   disabled={loading}
+                  autoComplete="current-password"
                 />
               </div>
             </div>

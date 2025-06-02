@@ -15,8 +15,9 @@ export const AdminLoginForm = () => {
   const [loginError, setLoginError] = useState<string | null>(null);
   const { signIn, loading, user, isAdmin } = useAuth();
 
-  const handleSubmit = async (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
+    e.stopPropagation();
     setLoginError(null);
     
     if (!email.trim() || !password) {
@@ -24,22 +25,42 @@ export const AdminLoginForm = () => {
       return;
     }
 
-    const result = await signIn(email, password);
-    if (result.error) {
-      setLoginError(result.error.message);
+    try {
+      const result = await signIn(email, password);
+      if (result.error) {
+        setLoginError(result.error.message);
+      }
+      // Don't handle redirect here - let useAuth handle it
+    } catch (error: any) {
+      setLoginError(error.message || 'An unexpected error occurred.');
     }
   };
 
-  // If user is logged in, redirect based on their role
+  // If user is logged in, check if they're an admin
   if (user) {
     if (isAdmin) {
       return <Navigate to="/admin/dashboard" replace />;
     } else {
-      // If not an admin, show access denied and redirect to tenant dashboard
-      setLoginError('Access denied. Admin credentials required.');
-      setTimeout(() => {
-        window.location.href = '/tenant/dashboard';
-      }, 2000);
+      // If not an admin, show access denied
+      return (
+        <div className="min-h-screen flex items-center justify-center bg-gray-50 px-4">
+          <Card className="w-full max-w-md">
+            <CardContent className="pt-6">
+              <Alert variant="destructive">
+                <AlertCircle className="h-4 w-4" />
+                <AlertDescription>
+                  Access denied. Admin credentials required.
+                  <div className="mt-2">
+                    <Link to="/login" className="text-primary hover:underline">
+                      Go to Tenant Login
+                    </Link>
+                  </div>
+                </AlertDescription>
+              </Alert>
+            </CardContent>
+          </Card>
+        </div>
+      );
     }
   }
 
@@ -65,11 +86,11 @@ export const AdminLoginForm = () => {
           
           <form onSubmit={handleSubmit} className="space-y-4">
             <div className="space-y-2">
-              <Label htmlFor="email">Admin Email</Label>
+              <Label htmlFor="admin-email">Admin Email</Label>
               <div className="relative">
                 <Mail className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
                 <Input
-                  id="email"
+                  id="admin-email"
                   type="email"
                   placeholder="admin@company.com"
                   value={email}
@@ -77,15 +98,16 @@ export const AdminLoginForm = () => {
                   className="pl-10"
                   required
                   disabled={loading}
+                  autoComplete="email"
                 />
               </div>
             </div>
             <div className="space-y-2">
-              <Label htmlFor="password">Password</Label>
+              <Label htmlFor="admin-password">Password</Label>
               <div className="relative">
                 <Lock className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
                 <Input
-                  id="password"
+                  id="admin-password"
                   type="password"
                   placeholder="••••••••"
                   value={password}
@@ -93,6 +115,7 @@ export const AdminLoginForm = () => {
                   className="pl-10"
                   required
                   disabled={loading}
+                  autoComplete="current-password"
                 />
               </div>
             </div>
