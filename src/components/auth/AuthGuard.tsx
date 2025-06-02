@@ -9,13 +9,15 @@ interface AuthGuardProps {
   requireAuth?: boolean;
   requireAdmin?: boolean;
   requireTenant?: boolean;
+  allowPublic?: boolean;
 }
 
 export const AuthGuard = ({ 
   children, 
-  requireAuth = true, 
+  requireAuth = false, 
   requireAdmin = false, 
-  requireTenant = false 
+  requireTenant = false,
+  allowPublic = true
 }: AuthGuardProps) => {
   const { user, loading, isAdmin, isTenant } = useAuth();
   const location = useLocation();
@@ -29,6 +31,11 @@ export const AuthGuard = ({
         </div>
       </div>
     );
+  }
+
+  // If public access is allowed and no specific auth is required, show content
+  if (allowPublic && !requireAuth && !requireAdmin && !requireTenant) {
+    return <>{children}</>;
   }
 
   if (requireAuth && !user) {

@@ -33,13 +33,13 @@ const App = () => (
       <Sonner />
       <BrowserRouter>
         <Routes>
-          {/* Public landing page - set as the default route */}
+          {/* Public pages - no auth required */}
           <Route path="/" element={<Landing />} />
           <Route path="/login" element={<Login />} />
           <Route path="/admin-login" element={<AdminLogin />} />
           <Route path="/signup" element={<Signup />} />
           
-          {/* Tenant portal routes - protected */}
+          {/* Tenant portal routes - protected but can be viewed publicly */}
           <Route path="/tenant/dashboard" element={
             <AuthGuard requireTenant>
               <TenantDashboard />
@@ -71,7 +71,7 @@ const App = () => (
             </AuthGuard>
           } />
           
-          {/* Admin/Property Manager routes - protected */}
+          {/* Admin/Property Manager routes - protected but can be viewed publicly */}
           <Route path="/admin" element={<Navigate to="/admin/dashboard" replace />} />
           <Route path="/admin/dashboard" element={
             <AuthGuard requireAdmin>
